@@ -2,15 +2,13 @@
 
 var moment = require('moment');
 var React = require('react-native');
+var Header = require('./Header');
 var Styles = require('../styles/Styles');
 
-var KeyboardEvents = require('react-native-keyboardevents');
-var KeyboardEventEmitter = KeyboardEvents.Emitter;
-
-var { DatePickerIOS, Modal, Text, TextInput, TouchableHighlight, View } = React;
+var { DatePickerIOS, Modal, Text, TextInput, TouchableHighlight, View, ScrollView } = React;
 
 var Create = React.createClass({
-    
+
     // -------------
     // Init
     // -------------
@@ -25,39 +23,12 @@ var Create = React.createClass({
         return {
             showModal: false,
             date: this.props.date,
-            text: '',
-            keyboardSpace: 0
+            text: ''
         }
     },
 
-    // --------------
-    // Keyboard space
-    // --------------
-
-    componentDidMount() {
-        KeyboardEventEmitter.on(KeyboardEvents.KeyboardDidShowEvent, this.updateKeyboardSpace);
-        KeyboardEventEmitter.on(KeyboardEvents.KeyboardWillHideEvent, this.resetKeyboardSpace);
-    },
-
-    componentWillUnmount() {
-        KeyboardEventEmitter.off(KeyboardEvents.KeyboardDidShowEvent, this.updateKeyboardSpace);
-        KeyboardEventEmitter.off(KeyboardEvents.KeyboardWillHideEvent, this.resetKeyboardSpace);
-    },
-
-    updateKeyboardSpace(frames) {
-        if (frames.end) {
-            this.setState({keyboardSpace: frames.end.height});
-        } else {
-            this.setState({keyboardSpace: frames.endCoordinates.height});
-        }        
-    },
-
-    resetKeyboardSpace() {
-        this.setState({keyboardSpace: 0});
-    },
-
     // ----------
-    // Datepicker 
+    // Datepicker
     // ----------
 
     onDateChange(date) {
@@ -77,7 +48,7 @@ var Create = React.createClass({
     },
 
     // -------------
-    // Modal 
+    // Modal
     // -------------
 
     showModal() {
@@ -89,57 +60,62 @@ var Create = React.createClass({
     },
 
     // -------------
-    // Submit 
+    // Submit
     // -------------
-    
+
     saveTask() {
         if (this.state.text) {
             this.refs['textInput'].value = '';
+            this.refs['textInput'].blur();
             this.props.onSubmit({text: this.state.text, due: this.state.dueDate});
             this.setState({text: '', dueDate: new Date()});
         }
     },
-    
+
     render() {
         return (
-            <View style={[Styles.screen, Styles.form, {alignItems: 'stretch'}]}>
-                <Modal
-                    animated={true}
-                    transparent={true}
-                    visible={this.state.showModal}>
-                    <DatePicker
-                        date={this.state.date}
-                        onDateSet={this.onDateSet}
-                        onDateReset={this.onDateReset}
-                        onDateChange={this.onDateChange} />
-                </Modal>
-                <TextInput
-                    ref='textInput'
-                    autoFocus={true}
-                    multiline={true}
-                    numberOfLines={3}
-                    onChangeText={(text) => this.setState({text})}
-                    style={Styles.formInput} 
-                    placeholder='What would you like to to?' />
-                <View style={Styles.buttonGroup}>
-                    <TouchableHighlight
-                        style={[Styles.button, Styles.inlineButton, Styles.secondaryButton]}
-                        onPress={this.showModal}
-                        underlayColor='#EEEEEE'>
-                        <Text style={[Styles.buttonText, Styles.secondaryButtonText]}>
-                            {this.state.dueDate ? moment(this.state.dueDate).format('DD/MM') : "DUE DATE"}
-                        </Text>
-                    </TouchableHighlight>
-                    <TouchableHighlight
-                        style={[Styles.button, Styles.inlineButton]}
-                        onPress={this.saveTask}
-                        underlayColor='#D1DBFC'>
-                        <Text style={Styles.buttonText}>
-                            SAVE
-                        </Text>
-                    </TouchableHighlight>
+            <View style={{flex: 1}}>
+                <Header navigator={this.props.navigator} route={{id: this.props.route}} />
+                <View style={{flex: 1, backgroundColor: 'white'}}>
+                    <View style={[Styles.screen, Styles.form, {flex: 0, alignItems: 'stretch'}]}>
+                        <Modal
+                            animated={true}
+                            transparent={true}
+                            visible={this.state.showModal}>
+                            <DatePicker
+                                date={this.state.date}
+                                onDateSet={this.onDateSet}
+                                onDateReset={this.onDateReset}
+                                onDateChange={this.onDateChange} />
+                        </Modal>
+                        <TextInput
+                            ref='textInput'
+                            autoFocus={true}
+                            multiline={true}
+                            numberOfLines={3}
+                            onChangeText={(text) => this.setState({text})}
+                            style={Styles.formInput}
+                            placeholder='What would you like to to?' />
+                        <View style={Styles.buttonGroup}>
+                            <TouchableHighlight
+                                style={[Styles.button, Styles.inlineButton, Styles.secondaryButton]}
+                                onPress={this.showModal}
+                                underlayColor='#EEEEEE'>
+                                <Text style={[Styles.buttonText, Styles.secondaryButtonText]}>
+                                    {this.state.dueDate ? moment(this.state.dueDate).format('DD/MM') : "DUE DATE"}
+                                </Text>
+                            </TouchableHighlight>
+                            <TouchableHighlight
+                                style={[Styles.button, Styles.inlineButton]}
+                                onPress={this.saveTask}
+                                underlayColor='#D1DBFC'>
+                                <Text style={Styles.buttonText}>
+                                    SAVE
+                                </Text>
+                            </TouchableHighlight>
+                        </View>
+                    </View>
                 </View>
-                <View style={{height: this.state.keyboardSpace - 20}}></View>
             </View>
         )
     }
@@ -170,7 +146,7 @@ var DatePicker = React.createClass({
                 </View>
             </View>
         )
-    }    
+    }
 });
 
 module.exports = Create;

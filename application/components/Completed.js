@@ -1,23 +1,28 @@
 'use strict';
 
+var moment = require('moment');
 var React = require('react-native');
+var Header = require('./Header');
 var Styles = require('../styles/Styles');
 
 var { AlertIOS, Image, ListView, Text, TouchableHighlight, View } = React;
 
 var Completed = React.createClass({
-    
+
     render() {
         var tasks = this.props.tasks || [];
-        
+
         if (tasks.length) {
-            var content = <TaskList items={tasks} clearHistory={this.confirmDialog} />    
+            var content = <TaskList items={tasks} clearHistory={this.confirmDialog} />
         } else {
             var content = <Text style={[Styles.caption]}>No completed tasks.</Text>
         }
         return (
-            <View style={Styles.screen}>
-                { content }
+            <View style={{flex: 1}}>
+                <Header navigator={this.props.navigator} route={{id: this.props.route}} />
+                <View style={Styles.screen}>
+                    { content }
+                </View>
             </View>
         )
     },
@@ -34,7 +39,7 @@ var Completed = React.createClass({
                 {text: 'Cancel', style: 'cancel'}
             ]
         )
-    }  
+    }
 });
 
 var TaskList = React.createClass({
@@ -44,11 +49,11 @@ var TaskList = React.createClass({
             rowHasChanged: (row1, row2) => row1 !== row2
         });
     },
-        
+
     render() {
         var dataSource = this.dataSource.cloneWithRows(this.props.items);
         return (
-            <ListView 
+            <ListView
                 automaticallyAdjustContentInsets={false}
                 dataSource={dataSource}
                 renderRow={this.renderRow}
@@ -84,8 +89,12 @@ var TaskListItem = React.createClass({
             <View style={Styles.listItem}>
                 <Image source={{uri: 'iconCompleted'}} style={Styles.listItemIcon} />
                 <Text
-                    style={Styles.listItemText}>
+                    style={[Styles.listItemText, {flex: 1}]}>
                     {item.text}
+                </Text>
+                <Text
+                    style={[Styles.listItemSmallText, {flex: 1}]}>
+                    {moment(item.completedOn).fromNow()}
                 </Text>
             </View>
         );

@@ -1,4 +1,4 @@
-'use strict'; 
+'use strict';
 
 var _ = require('underscore');
 var moment = require('moment');
@@ -21,18 +21,18 @@ var TaskStore = {
 
             // Sort tasks by priority
             _tasks.sort(this.sortByPriority)
-            
+
             return {
                 all: _tasks,
                 todo: _.where(_tasks, {completed: false}),
                 completed: _.where(_tasks, {completed: true}),
-                completedToday: _.findWhere(_tasks, {completedOn: moment().format('YYYY-MM-DD')}),
+                completedToday: _.some(_tasks, (task) => {return moment().format('YYYY-MM-DD') == moment(task.completedOn).format('YYYY-MM-DD')}),
                 deferedToday: _.findWhere(_tasks, {deferedOn: moment().format('YYYY-MM-DD')})
             }
         })
     },
-    
-    /* 
+
+    /*
      * Create new Task item.
      */
     create(attributes) {
@@ -71,23 +71,23 @@ var TaskStore = {
         var task = _.findWhere(_tasks, {id: id});
         task = assign(task, {
             completed: true,
-            completedOn: moment().format('YYYY-MM-DD')
+            completedOn: moment()
         });
         return this.persist();
     },
-    
+
     /**
      * Defer task.
      */
     defer(id, type) {
-        
+
         var task = _.findWhere(_tasks, {id: id});
         var tasks = _.where(_.clone(_tasks), {completed: false})
-        
+
         if (tasks.length > 1) {
-            
+
             tasks.sort(this.sortByCreatedDate);
-            
+
             if (type == 0) {
                 // Defer after next task
                 var deferFor = 1 + moment(tasks[1].createdOn) - moment(task.createdOn)
@@ -99,9 +99,9 @@ var TaskStore = {
                 deferFor: deferFor,
                 deferedOn: moment().format('YYYY-MM-DD')
             });
-        }        
+        }
         return this.persist();
-    },    
+    },
 
     /**
      * Delete all completed Tasks.
@@ -110,25 +110,25 @@ var TaskStore = {
         _tasks = _.reject(_tasks, (task) => { return task.completed })
         return this.persist();
     },
-    
+
     getTaskPriority(task) {
-        
+
         var priority = 0;
-        
+
         var today = moment();
         var week = moment().add(7, 'days');
 
         var createdOn = moment(task.createdOn);
         var completedDate = task.completedOn ? moment(task.completedOn) : null;
         var dueDate = task.due ? moment(task.due) : null;
-        
+
         var unixDays = 24 * 3600000;
 
         // - Defered tasks
         if (task.deferFor) {
             createdOn = moment(moment(task.createdOn).unix() + task.deferFor, 'X');
         }
-        
+
         if (task.completed) {
             // - Days since completed
             priority = completedDate - today;
@@ -147,10 +147,10 @@ var TaskStore = {
             // Days since created
             priority = today - createdOn;
         }
-        
+
         return priority / unixDays;
     },
-    
+
     /**
      * Get the entire collection of Tasks.
      */
@@ -164,7 +164,7 @@ var TaskStore = {
     sortByCreatedDate(a, b) {
         return b.createdOn - a.createdOn
     },
-        
+
     /**
      * Save Tasks to Storage
      */

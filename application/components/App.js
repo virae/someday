@@ -1,10 +1,10 @@
-'use strict'; 
+'use strict';
 
 var _ = require('underscore');
 var moment = require('moment');
 var React = require('react-native');
 
-var { ActionSheetIOS, AsyncStorage, TabBarIOS, Text, View } = React;
+var { Navigator } = React;
 
 /* Views */
 var Today = require('./Today');
@@ -13,13 +13,14 @@ var Completed = require('./Completed');
 
 /* Store */
 var Store = require('../stores/TaskStore');
+var Views = require('../constants/Views');
 
 var App = React.createClass({
 
     getDefaultProps() {
-        return { view: 'today' }
+        return { view: Views.TODAY }
     },
-    
+
     getInitialState() {
         return { view: this.props.view, tasks: [] }
     },
@@ -33,21 +34,23 @@ var App = React.createClass({
     // -------------
 
     async reloadState(options = {}) {
-        
+
         var tasks = await Store.getAll();
 
         this.setState({
             tasks: tasks,
             view: options.view || this.props.view
         })
+
+        this.navigator.replace({id: options.view || this.props.view})
     },
-    
+
     async createTask(data) {
-        Store.create(data);
-        this.props.navigator.pop();
-        this.reloadState({view: 'today'});
+        await Store.create(data);
+        this.navigator.pop();
+        this.reloadState({view: Views.TODAY});
     },
-    
+
     async removeTask(id) {
         await Store.destroy(id);
         this.reloadState();
@@ -62,70 +65,58 @@ var App = React.createClass({
         await Store.defer(id, option);
         this.reloadState();
     },
-            
+
     async clearCompleted() {
         await Store.clearCompleted();
-        this.reloadState({view: 'completed'});
+        this.reloadState({view: Views.HISTORY});
     },
 
     // -------------
     // Views
     // -------------
 
-    loadView(view) {
-        if (this.state.view != view) {
-            this.setState({view: view});
+    renderScene: function(route, nav) {
+        switch (route.id) {
+            case Views.TODAY:
+                return <Today
+                    navigator={nav}
+                    route={Views.TODAY}
+                    todo={_.first(this.state.tasks.todo)}
+                    todos={this.state.tasks.todo}
+                    completedToday={this.state.tasks.completedToday}
+                    deferedToday={this.state.tasks.deferedToday}
+                    onComplete={this.completeTask}
+                    onRemove={this.removeTask}
+                    onDefer={this.deferTask} />
+            case Views.HISTORY:
+                return <Completed
+                    navigator={nav}
+                    route={Views.HISTORY}
+                    tasks={this.state.tasks.completed}
+                    clearHistory={this.clearCompleted} />;
+            case Views.CREATE:
+                return <Create
+                    route={Views.CREATE}
+                    navigator={nav}
+                    onSubmit={this.createTask} />
         }
     },
-    
-    loadFormView() {
-        this.props.navigator.push({
-            title: 'New Task',
-            component: Create,
-            passProps: {onSubmit: this.createTask}
-        });
-    },
-    
+
     render() {
         return (
-            <TabBarIOS
-                tintColor="#7956EB"
-                barTintColor="#f6f6f6">
-                <TabBarIOS.Item
-                    title="Today"
-                    icon={{uri: 'menuItemToday', scale: 2}}
-                    selected={this.state.view == "today"}
-                    onPress={() => {this.loadView('today')}}>
-                    <Today 
-                        todo={_.first(this.state.tasks.todo)}
-                        todos={this.state.tasks.todo}
-                        completedToday={this.state.tasks.completedToday} 
-                        deferedToday={this.state.tasks.deferedToday}  
-                        onComplete={this.completeTask}
-                        onRemove={this.removeTask}
-                        onDefer={this.deferTask}
-                        onNewTask={() => {this.loadFormView()}}>
-                    </Today>
-                </TabBarIOS.Item>
-                <TabBarIOS.Item
-                    title="Completed"
-                    icon={{uri: 'menuItemHistory', scale: 2}}
-                    selected={this.state.view == "completed"}
-                    onPress={() => {this.loadView('completed')}}>
-                    <Completed 
-                        tasks={this.state.tasks.completed}
-                        clearHistory={this.clearCompleted}>
-                    </Completed>
-                </TabBarIOS.Item>
-                <TabBarIOS.Item
-                    title="New Task"
-                    icon={{uri: 'menuItemCreate', scale: 2}}
-                    selected={this.state.view == "form"}
-                    onPress={() => {this.loadFormView()}}>
-                </TabBarIOS.Item>
-            </TabBarIOS>
+            <Navigator
+                ref={(navigator) => {this.navigator = navigator}}
+                initialRoute={{id: this.state.view}}
+                renderScene={this.renderScene}
+                configureScene={(route) => {
+                    var sceneConfig = route.sceneConfig || Navigator.SceneConfigs.HorizontalSwipeJump;
+                    sceneConfig.gestures = {};
+                    return sceneConfig;
+                }}
+            />
         );
     }
+
 });
 
 module.exports = App;
