@@ -12,6 +12,10 @@ var styles = StyleSheet.create({
         justifyContent: 'center'
     },
 
+    flex: {
+        flex: 1
+    },
+
     container: {
         flex: 1,
         alignItems: 'center',
@@ -203,7 +207,7 @@ var styles = StyleSheet.create({
     headerComponent: {
         flex: 1,
         alignSelf: 'stretch',
-        paddingVertical: 72
+        paddingVertical: 60
     },
 
     headerText: {
@@ -219,11 +223,12 @@ var styles = StyleSheet.create({
     },
 
     headerDateTextLarge: {
-        flex: 3, color: 'white', textAlign: 'right', lineHeight: 48, fontSize: 48
+        flex: 3, color: 'white', textAlign: 'right', lineHeight: 48, fontSize: 48, paddingHorizontal: 3
+
     },
 
     headerDateTextSmall: {
-        color: 'white', lineHeight: 20, fontSize: 20
+        color: 'white', lineHeight: 20, fontSize: 20, paddingHorizontal: 3
     },
 
     headerIcon: {

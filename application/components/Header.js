@@ -4,10 +4,9 @@ var moment = require('moment');
 var dismissKeyboard = require('react-native-dismiss-keyboard');
 var React = require('react-native');
 var Styles = require('../styles/Styles');
+var Views = require('../constants/Views');
 
 var { Image, Text, TouchableOpacity, Navigator, StyleSheet, View } = React;
-
-var Views = require('../constants/Views');
 
 var NavButton = React.createClass({
     render() {
@@ -30,10 +29,10 @@ var NavDate = React.createClass({
 
         return (
             <View style={Styles.headerDate}>
-                <View style={{flex: 1, paddingHorizontal: 3}}>
+                <View style={Styles.flex}>
                     <Text style={Styles.headerDateTextLarge}>{day}</Text>
                 </View>
-                <View style={{flex: 1, paddingHorizontal: 3}}>
+                <View style={Styles.flex}>
                     <Text style={Styles.headerDateTextSmall}>{month}</Text>
                     <Text style={Styles.headerDateTextSmall}>{year}</Text>
                 </View>
