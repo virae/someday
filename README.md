@@ -1,9 +1,9 @@
 # Someday
-Simple iOS todo manager app for "someday" tasks build in React Native
+Simple iOS todo manager app for "someday" tasks built in React Native
 
 Preview
 ------------
-!["Someday - Simple iOS todo manager app for "someday" tasks build in React Native"](http://dsh.re/2607f) 
+!["Someday - Simple iOS todo manager app for "someday" tasks built in React Native"](http://dsh.re/2607f) 
 
 Installation
 ------------
